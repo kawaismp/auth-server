@@ -45,7 +45,6 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.Serv
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 
@@ -55,33 +54,38 @@ public class Main {
     private static final boolean SHOULD_AUTHENTICATE = false;
     private static final int SERVER_PORT = 25565;
 
-    private static final ChunkSection EMPTY_SECTION;
-    private static final ChunkSection SPAWN_SECTION;
-    private static final byte[] PREGENERATED_CHUNK_COLUMN; // Serialized 16 section column (y range) for (0,0)
+    private static final SingletonPalette AIR_PALETTE = new SingletonPalette(0);
+    private static final Component SERVER_NAME = Component.text("Auth Server");
     private static final BlockEntityInfo[] EMPTY_BLOCK_ENTITIES = new BlockEntityInfo[0];
-    private static final LightUpdateData EMPTY_LIGHT_UPDATE = new LightUpdateData(new BitSet(), new BitSet(), new BitSet(), new BitSet(), Collections.emptyList(), Collections.emptyList());
+    private static final LightUpdateData EMPTY_LIGHT_UPDATE = new LightUpdateData(
+            new BitSet(), new BitSet(), new BitSet(), new BitSet(),
+            Collections.emptyList(), Collections.emptyList()
+    );
 
-    static {
-        EMPTY_SECTION = createEmptySection();
-        SPAWN_SECTION = createSpawnSection();
-        PREGENERATED_CHUNK_COLUMN = buildSerializedChunkColumn();
-    }
+    // Pre-serialized chunk column (0,0)
+    private static final byte[] PREGENERATED_CHUNK_COLUMN = buildSerializedChunkColumn();
 
+    /**
+     * Build one empty section with AIR palette
+     */
     private static ChunkSection createEmptySection() {
         ChunkSection section = new ChunkSection();
-        section.getChunkData().setPalette(new SingletonPalette(0));
-        BitStorage storage = section.getChunkData().getStorage();
-        for (int i = 0; i < storage.getSize(); i++) storage.set(i, 0);
+        section.getChunkData().setPalette(AIR_PALETTE);
+        BitStorage blocks = section.getChunkData().getStorage();
+        for (int i = 0; i < blocks.getSize(); i++) blocks.set(i, 0);
 
-        section.getBiomeData().setPalette(new SingletonPalette(0));
-        BitStorage biome = section.getBiomeData().getStorage();
-        for (int i = 0; i < biome.getSize(); i++) biome.set(i, 0);
+        section.getBiomeData().setPalette(AIR_PALETTE);
+        BitStorage biomes = section.getBiomeData().getStorage();
+        for (int i = 0; i < biomes.getSize(); i++) biomes.set(i, 0);
+
         return section;
     }
 
+    /**
+     * Spawn section with bedrock layer at y=0
+     */
     private static ChunkSection createSpawnSection() {
         ChunkSection section = new ChunkSection();
-        // Layer 0 = block id 14, rest air (0)
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 16; y++) {
                 for (int z = 0; z < 16; z++) {
@@ -89,18 +93,22 @@ public class Main {
                 }
             }
         }
-        section.getBiomeData().setPalette(new SingletonPalette(0));
-        BitStorage biome = section.getBiomeData().getStorage();
-        for (int i = 0; i < biome.getSize(); i++) biome.set(i, 0);
+        section.getBiomeData().setPalette(AIR_PALETTE);
+        BitStorage biomes = section.getBiomeData().getStorage();
+        for (int i = 0; i < biomes.getSize(); i++) biomes.set(i, 0);
         return section;
     }
 
+    /**
+     * Build pre-serialized chunk column, discarding section objects afterwards
+     */
     private static byte[] buildSerializedChunkColumn() {
         MinecraftCodecHelper helper = MinecraftCodec.CODEC.getHelperFactory().get();
         ByteBuf buf = Unpooled.buffer();
         try {
             for (int i = 0; i < 16; i++) {
-                helper.writeChunkSection(buf, i == 5 ? SPAWN_SECTION : EMPTY_SECTION);
+                ChunkSection section = (i == 5) ? createSpawnSection() : createEmptySection();
+                helper.writeChunkSection(buf, section);
             }
             return buf.array();
         } finally {
@@ -117,8 +125,8 @@ public class Main {
         server.setGlobalFlag(MinecraftConstants.SHOULD_AUTHENTICATE, SHOULD_AUTHENTICATE);
         server.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, session ->
                 new ServerStatusInfo(
-                        Component.text("Auth Server"),
-                        new PlayerInfo(100, 0, new ArrayList<>()),
+                        SERVER_NAME,
+                        new PlayerInfo(100, 0, Collections.emptyList()),
                         new VersionInfo(MinecraftCodec.CODEC.getMinecraftVersion(), MinecraftCodec.CODEC.getProtocolVersion()),
                         null,
                         false
@@ -150,7 +158,6 @@ public class Main {
                     false
             ));
 
-            // Reuse pre-generated chunk column data
             session.send(new ClientboundLevelChunkWithLightPacket(
                     0, 0, PREGENERATED_CHUNK_COLUMN, NbtMap.EMPTY,
                     EMPTY_BLOCK_ENTITIES,
@@ -176,12 +183,12 @@ public class Main {
                 event.getSession().addListener(new SessionAdapter() {
                     @Override
                     public void packetReceived(Session session, Packet packet) {
-                        if (packet instanceof ServerboundMovePlayerPosPacket movePlayerPosPacket) {
-                            if (movePlayerPosPacket.getX() != 8 || movePlayerPosPacket.getY() != 17 || movePlayerPosPacket.getZ() != 8) {
+                        if (packet instanceof ServerboundMovePlayerPosPacket move) {
+                            if (move.getX() != 8 || move.getY() != 17 || move.getZ() != 8) {
                                 session.send(new ClientboundPlayerPositionPacket(8, 17, 8, 0, 0, 0));
                             }
-                        } else if (packet instanceof ServerboundMovePlayerPosRotPacket movePlayerPosRotPacket) {
-                            if (movePlayerPosRotPacket.getYaw() != 0 || movePlayerPosRotPacket.getPitch() != 0) {
+                        } else if (packet instanceof ServerboundMovePlayerPosRotPacket moveRot) {
+                            if (moveRot.getYaw() != 0 || moveRot.getPitch() != 0) {
                                 session.send(new ClientboundPlayerPositionPacket(8, 17, 8, 0, 0, 0));
                             }
                         }
