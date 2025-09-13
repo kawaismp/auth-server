@@ -1,5 +1,7 @@
 package net.kawaismp.authserver;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -12,9 +14,22 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
+
 public class Main {
 
     public static void main(String[] args) {
+        YamlDocument config;
+        try {
+            config = YamlDocument.create(new File("config.yml"), Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream("config.yml")));
+            config.save();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
         // Initialize the server
         MinecraftServer minecraftServer = MinecraftServer.init();
 
@@ -34,9 +49,7 @@ public class Main {
             player.setRespawnPoint(new Pos(0, 1, 0));
         });
 
-        globalEventHandler.addListener(PlayerMoveEvent.class, event -> {
-            event.setCancelled(true);
-        });
+        globalEventHandler.addListener(PlayerMoveEvent.class, event -> event.setCancelled(true));
 
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
@@ -45,6 +58,6 @@ public class Main {
         });
 
         // Start the server
-        minecraftServer.start("0.0.0.0", 25565);
+        minecraftServer.start(config.getString(Route.from("address")), config.getInt(Route.from("port")));
     }
 }
