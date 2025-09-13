@@ -4,9 +4,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerMoveEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.event.player.*;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.LightingChunk;
@@ -26,6 +24,7 @@ public class Main {
 
         instanceContainer.setGenerator(unit -> unit.modifier().fillHeight(0, 1, Block.BARRIER));
         instanceContainer.setChunkSupplier(LightingChunk::new);
+        instanceContainer.setTimeRate(0);
 
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
 
@@ -41,7 +40,8 @@ public class Main {
 
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
-            player.addEffect(new Potion(PotionEffect.BLINDNESS, 10, 999999));
+            player.addEffect(new Potion(PotionEffect.BLINDNESS, 0, 999999));
+            player.setInvisible(true);
         });
 
         // Start the server
