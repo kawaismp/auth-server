@@ -155,7 +155,8 @@ public class Main {
             int y = (i >> 8) & 15; // y is the lowest significant in our mapping
             int x = (i >> 4) & 15;
             int z = i & 15;
-            section.setBlock(x, y, z, (y == 0) ? 14 : 0);
+            // as in 1.21, block state 10366 is barrier[waterlogged=false]
+            section.setBlock(x, y, z, (y == 0) ? 10366 : 0);
         }
 
         section.getBiomeData().setPalette(AIR_PALETTE);
@@ -213,10 +214,6 @@ public class Main {
         public void packetReceived(Session session, Packet packet) {
             if (packet instanceof ServerboundMovePlayerPosPacket move) {
                 if (move.getX() != 8 || move.getY() != 17 || move.getZ() != 8) {
-                    session.send(FORCE_TELEPORT_PACKET);
-                }
-            } else if (packet instanceof ServerboundMovePlayerPosRotPacket moveRot) {
-                if (moveRot.getYaw() != 0 || moveRot.getPitch() != 0) {
                     session.send(FORCE_TELEPORT_PACKET);
                 }
             }
