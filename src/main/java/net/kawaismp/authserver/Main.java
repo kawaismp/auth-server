@@ -1,5 +1,7 @@
 package net.kawaismp.authserver;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.kyori.adventure.text.Component;
@@ -40,22 +42,24 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.Clien
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundSetDefaultSpawnPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundSetTimePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosPacket;
-import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosRotPacket;
 import org.cloudburstmc.nbt.NbtMap;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.Objects;
 
 public class Main {
     private static final boolean ENCRYPT_CONNECTION = false;
     private static final boolean SHOULD_AUTHENTICATE = false;
-    private static final int SERVER_PORT = 25565;
 
     private static final SingletonPalette AIR_PALETTE = new SingletonPalette(0);
     private static final Component SERVER_NAME = Component.text("Auth Server");
     private static final BlockEntityInfo[] EMPTY_BLOCK_ENTITIES = new BlockEntityInfo[0];
     private static final LightUpdateData EMPTY_LIGHT_UPDATE = new LightUpdateData(
-            new java.util.BitSet(), new java.util.BitSet(), new java.util.BitSet(), new java.util.BitSet(),
+            new BitSet(), new BitSet(), new BitSet(), new BitSet(),
             Collections.emptyList(), Collections.emptyList()
     );
     private static final Key[] WORLD_KEYS = new Key[]{Key.key("minecraft:world")};
@@ -167,9 +171,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        YamlDocument config;
+        try {
+            config = YamlDocument.create(new File("config.yml"), Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream("config.yml")));
+            config.save();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
         SessionService sessionService = new SessionService();
 
-        Server server = new TcpServer("0.0.0.0", SERVER_PORT, MinecraftProtocol::new);
+        Server server = new TcpServer(config.getString(Route.from("address")), config.getInt(Route.from("port")), MinecraftProtocol::new);
         server.setGlobalFlag(MinecraftConstants.SESSION_SERVICE_KEY, sessionService);
         server.setGlobalFlag(MinecraftConstants.ENCRYPT_CONNECTION, ENCRYPT_CONNECTION);
         server.setGlobalFlag(MinecraftConstants.SHOULD_AUTHENTICATE, SHOULD_AUTHENTICATE);
@@ -205,7 +218,7 @@ public class Main {
             }
         });
 
-        System.out.println("Server started on " + server.getHost());
+        System.out.println("Server started on " + server.getHost() + ":" + server.getPort());
         server.bind();
     }
 
