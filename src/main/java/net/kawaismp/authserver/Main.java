@@ -30,6 +30,11 @@ public class Main {
             return;
         }
 
+        System.setProperty("minestom.tps", String.valueOf(5));
+        System.setProperty("minestom.chunk-view-distance", String.valueOf(1));
+        System.setProperty("minestom.entity-view-distance", String.valueOf(0));
+        System.setProperty("minestom.packet-per-tick", String.valueOf(25));
+
         // Initialize the server
         MinecraftServer minecraftServer = MinecraftServer.init();
 
