@@ -39,7 +39,7 @@ jobs:
 
       - name: Compile with GraalVM Native Image
         run: |
-          native-image -jar target/authserver-2.0-SNAPSHOT.jar
+          native-image --march=compatibility -jar target/authserver-2.0-SNAPSHOT.jar
 
       - name: Upload JAR to Release
         if: github.event_name == 'push'
