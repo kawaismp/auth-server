@@ -1,5 +1,6 @@
 package net.kawaismp.authserver;
 
+import net.minestom.server.Auth;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -21,7 +22,7 @@ public class Main {
         System.setProperty("minestom.packet-per-tick", String.valueOf(25));
 
         // Initialize the server
-        MinecraftServer minecraftServer = MinecraftServer.init();
+        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Bungee());
 
         // Instance and world setup
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
