@@ -13,6 +13,8 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
 
+import java.util.Set;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -22,7 +24,7 @@ public class Main {
         System.setProperty("minestom.packet-per-tick", String.valueOf(25));
 
         // Initialize the server
-        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Bungee());
+        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Bungee(Set.of("secret", "here")));
 
         // Instance and world setup
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
