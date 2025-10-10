@@ -3,6 +3,7 @@ package net.kawaismp.authserver;
 import net.minestom.server.Auth;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.*;
@@ -47,6 +48,7 @@ public class Main {
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
 //            player.addEffect(new Potion(PotionEffect.BLINDNESS, 0, 999999));
+            player.setGameMode(GameMode.SPECTATOR);
             player.setInvisible(true);
         });
 
