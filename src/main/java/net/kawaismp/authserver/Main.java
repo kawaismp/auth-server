@@ -18,8 +18,8 @@ import java.util.Set;
 public class Main {
 
     public static void main(String[] args) {
-        System.setProperty("minestom.tps", String.valueOf(8));
-        System.setProperty("minestom.chunk-view-distance", String.valueOf(1));
+        System.setProperty("minestom.tps", String.valueOf(12));
+        System.setProperty("minestom.chunk-view-distance", String.valueOf(2));
         System.setProperty("minestom.entity-view-distance", String.valueOf(0));
         System.setProperty("minestom.packet-per-tick", String.valueOf(25));
 
@@ -46,7 +46,7 @@ public class Main {
 
         globalEventHandler.addListener(PlayerSpawnEvent.class, event -> {
             final Player player = event.getPlayer();
-            player.addEffect(new Potion(PotionEffect.BLINDNESS, 0, 999999));
+//            player.addEffect(new Potion(PotionEffect.BLINDNESS, 0, 999999));
             player.setInvisible(true);
         });
 

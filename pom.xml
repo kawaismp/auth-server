@@ -47,7 +47,7 @@
         <dependency>
             <groupId>net.minestom</groupId>
             <artifactId>minestom</artifactId>
-            <version>2025.09.13-1.21.8</version>
+            <version>2025.10.05-1.21.8</version>
         </dependency>
         <dependency>
             <groupId>dev.dejvokep</groupId>
