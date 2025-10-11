@@ -25,7 +25,7 @@ public class Main {
         System.setProperty("minestom.packet-per-tick", String.valueOf(25));
 
         // Initialize the server
-        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Bungee(Set.of("secret", "here")));
+        MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Offline());
 
         // Instance and world setup
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
